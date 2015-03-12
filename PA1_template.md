@@ -1,14 +1,12 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+
+
 
 ## Loading and preprocessing the data
 Unzipping, loading and transforming data
 
-```{r echo = TRUE}
+
+```r
 unzip("activity.zip")
 data<-read.csv("activity.csv")
 data$date<-as.Date(data$date,"%Y-%m-%d")
@@ -17,43 +15,70 @@ data$date<-as.Date(data$date,"%Y-%m-%d")
 
 ## What is mean total number of steps taken per day?
 1. Histogram of the total number of steps taken per day:
-```{r echo = TRUE}
+
+```r
 na.mean<-function(x) z<-mean(x,na.rm=TRUE)
 steps_per_day<-tapply(data$steps, data$date,sum)
 hist(steps_per_day,breaks=10)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 
 2. Mean of the total number of steps taken per day
-```{r echo = TRUE}
+
+```r
 mean<-mean(steps_per_day,na.rm=TRUE)
 print(paste("Mean steps per day:", mean))
 ```
+
+```
+## [1] "Mean steps per day: 10766.1886792453"
+```
 3. Median of the total number of steps taken per day 
-```{r echo = TRUE}
+
+```r
 median<-median(steps_per_day,na.rm=TRUE)
 print(paste("Median steps per day:", median))
 ```
+
+```
+## [1] "Median steps per day: 10765"
+```
 ## What is the average daily activity pattern?
 1. Time series plot with highlighted maximum value
-```{r echo = TRUE}
+
+```r
 steps_per_interval<-tapply(data$steps, data$interval,na.mean)
 plot(x=names(steps_per_interval),y=steps_per_interval,type="l")
 points(x=names(which(steps_per_interval==max(steps_per_interval))),y=max(steps_per_interval), col="red", lwd=4)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 
 2. Interval with maximum number of steps:
-```{r echo=TRUE}
+
+```r
 print(paste("Interval with maximum steps: ",names(which(steps_per_interval==max(steps_per_interval)))))
+```
+
+```
+## [1] "Interval with maximum steps:  835"
 ```
 ## Imputing missing values
 1. Total number of missing values
-```{r echo = TRUE}
+
+```r
 sum(as.integer(is.na(data$steps)))
 ```
+
+```
+## [1] 2304
+```
 2. Replacing missings by mean for 5 min interval in a new dataset
-```{r echo=TRUE}
+
+```r
 data.na<-data
 ind<-which(is.na(data.na$steps))
 for (i in ind){
@@ -65,29 +90,42 @@ for (i in ind){
 }    
 ```
 3. Histogram of the total number of steps taken per day:
-```{r echo = TRUE}
+
+```r
 steps_per_day<-tapply(data.na$steps, data.na$date,sum)
 hist(steps_per_day,breaks=10)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
 
 4. New mean of the total number of steps taken per day
-```{r echo = TRUE}
+
+```r
 mean.na<-mean(steps_per_day)
 print(paste("New mean steps per day:", mean.na))
 ```
+
+```
+## [1] "New mean steps per day: 10766.1886792453"
+```
 5. Median of the total number of steps taken per day 
-```{r echo = TRUE}
+
+```r
 median.na<-median(steps_per_day)
 print(paste("New median steps per day:", median.na))
 ```
+
+```
+## [1] "New median steps per day: 10766.1886792453"
+```
 6. Mean and median comparison:
 
-New mean: `r mean.na`   old mean: `r mean`
+New mean: 1.0766189\times 10^{4}   old mean: 1.0766189\times 10^{4}
 
-New median: `r median.na`        old median: `r median`
+New median: 1.0766189\times 10^{4}        old median: 10765
 
-**As expected there is no difference between estimated values of means, but median value is higher and equal to mean. Change in median: `r median.na-median`. Also estimated value of total number of steps per day has increased as seen from histograms comparison. **
+**As expected there is no difference between estimated values of means, but median value is higher and equal to mean. Change in median: 1.1886792. Also estimated value of total number of steps per day has increased as seen from histograms comparison. **
 
 
 
@@ -95,13 +133,15 @@ New median: `r median.na`        old median: `r median`
 ## Are there differences in activity patterns between weekdays and weekends?
 
 1. Creating a new variable day
-```{r echo = TRUE}
+
+```r
 data.na$day<-as.POSIXlt(as.Date(data.na$date,'%m/%d/%Y'))$wday %in% c(0,6)
 data.na$day<-ifelse(data.na$day,"weekend","weekday")
 ```
 
 2. Time series plot 
-```{r echo = TRUE}
+
+```r
 ##calculating means per weekdays/weekends and per interval 
 data.na$temp<-paste(data.na$interval,data.na$day)
 steps_per_interval_per_day<-tapply(data.na$steps, data.na$temp,mean)
@@ -121,8 +161,24 @@ steps_per_interval_per_day$ID<-rownames(steps_per_interval_per_day)
 plot_data<-merge(names,steps_per_interval_per_day,by="ID")
 plot_data$interval<-as.numeric(levels(plot_data$interval))[plot_data$interval]
 install.packages("ggplot2",repos= "http://cran.us.r-project.org",type = 'source')
+```
+
+```
+## Installing package into 'C:/Users/Peter/Documents/R/win-library/3.1'
+## (as 'lib' is unspecified)
+```
+
+```
+## 
+## The downloaded source packages are in
+## 	'C:\Users\Peter\AppData\Local\Temp\RtmpQ9PB5a\downloaded_packages'
+```
+
+```r
 library(ggplot2)
 qplot(interval,mean_steps,data=plot_data,facets=day~.,geom="line")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
 
 
